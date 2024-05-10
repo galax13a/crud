@@ -1,0 +1,128 @@
+<?php
+//live user cr26
+namespace App\Http\Livewire;
+
+use Livewire\Component;
+use Livewire\WithPagination;
+use App\Models\{{modelName}};
+
+
+class {{modelName}}s extends Component
+{
+    protected $listeners = ['confirm1' => 'confirm1_model', 'confirm-delete-model' => 'destroy'];
+
+    use WithPagination;
+
+	protected $paginationTheme = 'bootstrap';
+    public $selected_id, $keyWord, {{updatefield}};
+
+    public function updatingKeyWord() // reset pages keywork
+    {
+        $this->resetPage();
+    }
+
+    public function render()
+    {
+		$keyWord = '%'.$this->keyWord .'%';
+
+        return view('livewire.{{modelNamePluralLowerCase}}.view', [
+            {{headRender}}{{search}}->paginate(10)
+        ]);
+    }
+	
+    public function cancel()
+    {
+        $this->resetInput();
+    }
+	
+    private function resetInput()
+    {		{{resetfields}}
+    }
+
+    public function store()
+    {
+        $this->validate([{{rules}}
+        ]);
+
+        {{modelName}}::create([ {{addfields}}
+        ]);
+        
+        $this->resetInput();
+		$this->dispatchBrowserEvent('closeModal');		
+        $this->dispatchBrowserEvent('notify', [
+                'type' => 'success',
+                'message' => '¡ {{modelName}} Successfully created!',
+            ]);
+    }
+
+    public function edit($id=null) //editar si es seguro y pertenece el registro a usuario
+    {
+        
+        $this->selected_id = $id; 
+        if(!$this->selected_id){
+            $this->dispatchBrowserEvent('notify', [
+                'type' => 'failure',
+                'message' => '¡Unauthorized Record Null !',
+            ]);      
+            abort(500, 'server abort ');
+       }
+       $record = {{modelName}}::findOrFail($this->selected_id);
+        
+       if ($record->userCanModify()) {
+                 {{editfields}}
+        } else {           
+            $this->dispatchBrowserEvent('notify', [
+                'type' => 'failure',
+                'message' => '¡ Unauthorized error, Registry not recovered.!',
+            ]);
+        }  
+
+    }
+
+    public function update()// actulalizar 
+    {
+        if(!$this->selected_id){
+            $this->dispatchBrowserEvent('notify', [
+                'type' => 'failure',
+                'message' => '¡Unauthorized Record Null !',
+            ]);
+            return false;
+       }
+
+        $this->validate([{{rules}}
+        ]);            
+
+        $record = {{modelName}}::findOrFail($this->selected_id);
+        
+        if ($record->userCanModify()) {
+
+                if ($this->selected_id) {
+                    $record = {{modelName}}::find($this->selected_id);
+                    $record->update([ {{addfields}}
+                    ]);
+
+                    $this->resetInput();
+                    $this->dispatchBrowserEvent('closeModal');
+            
+                    $this->dispatchBrowserEvent('notify', [
+                        'type' => 'success',
+                        'message' => '¡ {{modelName}} Successfully updated.!',
+                    ]);
+                }
+        }
+        else {
+           // $this->resetForm();
+            $this->dispatchBrowserEvent('notify', [
+                'type' => 'failure',
+                'message' => '¡ Unauthorized error, Registry not recovered.!',
+            ]);
+        }     
+    }
+
+    public function destroy($id)
+    {
+        if ($id) {
+            {{modelName}}::where('id', $id)->delete();
+        }
+    }
+}

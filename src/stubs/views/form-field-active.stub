@@ -1,0 +1,5 @@
+                  <label for="active"></label>                  
+                          <x-com-check :active="$active" />
+                  @error('{{column}}') <span class="error text-danger">{{ $message }}</span> @enderror       
+            
+                    

@@ -1,0 +1,19 @@
+<?php 
+
+namespace {{modelNamespace}};
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class {{modelName}} extends Model
+{
+	use HasFactory;
+	
+    public $timestamps = true;
+
+    protected $table = '{{componentelivewire}}';
+
+    protected $fillable = [{{fillable}}]; // fillable2
+	{{relations}} 
+    {{booted_users}} 
+}

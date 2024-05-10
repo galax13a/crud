@@ -1,0 +1,89 @@
+<?php
+
+namespace App\Http\Livewire;
+
+use Livewire\Component;
+use Livewire\WithPagination;
+use App\Models\{{modelName}};
+
+class {{modelName}}s extends Component
+{
+    protected $listeners = ['confirm1' => 'confirm1_model', 'confirm-delete-model' => 'destroy'];
+
+    use WithPagination;
+
+	protected $paginationTheme = 'bootstrap';
+    public $selected_id, $keyWord, {{updatefield}};
+
+    public function updatingKeyWord() // reset pages keywork
+    {
+        $this->resetPage();
+    }
+
+    public function render()
+    {
+		$keyWord = '%'.$this->keyWord .'%';
+
+        return view('livewire.{{modelNamePluralLowerCase}}.view', [
+            {{headRender}}{{search}}->paginate(10)
+        ]);
+    }
+	
+    public function cancel()
+    {
+        $this->resetInput();
+    }
+	
+    private function resetInput()
+    {		{{resetfields}}
+    }
+
+    public function store()
+    {
+        $this->validate([{{rules}}
+        ]);
+
+        {{modelName}}::create([ {{addfields}}
+        ]);
+        
+        $this->resetInput();
+		$this->dispatchBrowserEvent('closeModal');		
+        $this->dispatchBrowserEvent('notify', [
+                'type' => 'success',
+                'message' => '¡ {{modelName}} Successfully created!',
+            ]);
+    }
+
+    public function edit($id)
+    {
+        $record = {{modelName}}::findOrFail($id);
+        $this->selected_id = $id; {{editfields}}
+    }
+
+    public function update()
+    {
+        $this->validate([{{rules}}
+        ]);
+
+        if ($this->selected_id) {
+			$record = {{modelName}}::find($this->selected_id);
+            $record->update([ {{addfields}}
+            ]);
+
+            $this->resetInput();
+            $this->dispatchBrowserEvent('closeModal');
+	
+             $this->dispatchBrowserEvent('notify', [
+                'type' => 'success',
+                'message' => '¡ {{modelName}} Successfully updated.!',
+            ]);
+        }
+    }
+
+    public function destroy($id)
+    {
+        if ($id) {
+            {{modelName}}::where('id', $id)->delete();
+        }
+    }
+}
