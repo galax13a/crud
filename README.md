@@ -12,12 +12,12 @@ More detailed documentation can ne found at :
 You can install the package via [Composer](https://getcomposer.org/):
 
 ```bash
-composer require cris26/starcho-crud
+composer require galax13a/crud
 ```
 
 ## Usage
 
-After running `composer require cris26/starcho-crud` command just run:
+After running `composer require galax13a/crud` command just run:
 
 ```bash
 php artisan crud:install
