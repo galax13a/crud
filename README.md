@@ -1,23 +1,41 @@
 # Starcho CRUD Generator Laravel / Livewire v2~ 
 
-* Version V1.0
+
 
 A livewire CRUD Generation package to help scaffold basic site files. Package is autoloaded as per PSR-4 autoloading in any laravel version `^5.6` so no extra config required. However is has been tested on version `^7 & ^8 ~9 ~10`. It uses ***auth*** middleware thus installs `laravel/ui` just incase you don't have any other auth mechanism, this does not mean you have to use `laravel/ui`.
 
-## Documentation CRUD
+## Documentation >> Starcho V1.0.2
 modificado por Cristhian Ryu
 More detailed documentation can ne found at :
-## Installation
+livewire v2
+```bash
+composer require livewire/livewire:^2.12
+```
+## Installation StarchoCRUD
 
 You can install the package via [Composer](https://getcomposer.org/):
 
 ```bash
-composer require galax13a/crud
+composer require galax13a/starcho-crud
 ```
+## Otros Paquetes Usados
+cybercog/laravel-ban
+```bash
+composer require cybercog/laravel-ban
+```
+laravel/folio
+```bash
+composer require laravel/folio
+```
+laravel/socialite
+```bash
+composer require laravel/socialite
+```
+
 
 ## Usage
 
-After running `composer require galax13a/crud` command just run:
+After running `composer require galax13a/starcho-crud` command just run:
 
 ```bash
 php artisan crud:install
@@ -60,7 +78,9 @@ If you discover any security related issues, please email george@flightsadmin.co
 ## Credits
 
 - [George Chitechi](https://github.com/flightsadmin)
+- [Cristhian Ryu](https://github.com/galax13a)
 - [All Contributors](../../contributors)
+
 
 ## License
 
