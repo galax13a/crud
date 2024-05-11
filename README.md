@@ -16,7 +16,7 @@ composer require livewire/livewire:^2.12
 You can install the package via [Composer](https://getcomposer.org/):
 
 ```bash
-composer require galax13a/starcho-crud
+composer require galax13a/crud
 ```
 ## Otros Paquetes Usados
 cybercog/laravel-ban
@@ -35,7 +35,7 @@ composer require laravel/socialite
 
 ## Usage
 
-After running `composer require galax13a/starcho-crud` command just run:
+After running `composer require galax13a/crud` command just run:
 
 ```bash
 php artisan crud:install
