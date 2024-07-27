@@ -1,32 +1,20 @@
 <?php
-
+/* Starcho Livewire v1.0 */
 namespace App\Http\Livewire;
 
 use Livewire\Component;
-use Livewire\WithPagination;
 use App\Models\{{modelName}};
 
 class {{modelName}}s extends Component
 {
-    protected $listeners = ['confirm1' => 'confirm1_model', 'confirm-delete-model' => 'destroy'];
-
-    use WithPagination;
+    protected $listeners = ['StarchoDeleteRecord' => 'destroy', 'starcho-edit' => 'edit'];
 
 	protected $paginationTheme = 'bootstrap';
     public $selected_id, $keyWord, {{updatefield}};
 
-    public function updatingKeyWord() // reset pages keywork
-    {
-        $this->resetPage();
-    }
-
-    public function render()
-    {
-		$keyWord = '%'.$this->keyWord .'%';
-
-        return view('livewire.{{modelNamePluralLowerCase}}.view', [
-            {{headRender}}{{search}}->paginate(10)
-        ]);
+    public function render() // Render Com
+    {		        
+        return view('livewire.{{modelNamePluralLowerCase}}.view');
     }
 	
     public function cancel()
@@ -34,11 +22,11 @@ class {{modelName}}s extends Component
         $this->resetInput();
     }
 	
-    private function resetInput()
+    private function resetInput() // Reset Inputs
     {		{{resetfields}}
     }
 
-    public function store()
+    public function store() // Store Table
     {
         $this->validate([{{rules}}
         ]);
@@ -47,17 +35,23 @@ class {{modelName}}s extends Component
         ]);
         
         $this->resetInput();
-		$this->dispatchBrowserEvent('closeModal');		
-        $this->dispatchBrowserEvent('notify', [
-                'type' => 'success',
-                'message' => '¡ {{modelName}} Successfully created!',
-            ]);
+        Starcho_Close($this);
+        Starcho_Notify($this, 'success', __('StarchoAdmin.notify.success'));
+        Starcho_TableRefresh($this);
     }
 
-    public function edit($id)
+    public function edit($id) // Edit Table
     {
-        $record = {{modelName}}::findOrFail($id);
-        $this->selected_id = $id; {{editfields}}
+        try {
+              
+            $record = {{modelName}}::findOrFail($id);
+            $this->selected_id = $id; {{editfields}}
+
+         } catch (\Exception $e) {
+            report($e); 
+            Starcho_Notify($this, 'failure',  __('StarchoAdmin.notify.failure_select') );
+            //$e->getMessage());
+        }
     }
 
     public function update()
@@ -70,13 +64,10 @@ class {{modelName}}s extends Component
             $record->update([ {{addfields}}
             ]);
 
+            Starcho_Close($this);
+	        Starcho_Notify($this, 'success', __('StarchoAdmin.notify.update') . $this->name);
+            $this->emit('StarchoTableRefresh');
             $this->resetInput();
-            $this->dispatchBrowserEvent('closeModal');
-	
-             $this->dispatchBrowserEvent('notify', [
-                'type' => 'success',
-                'message' => '¡ {{modelName}} Successfully updated.!',
-            ]);
         }
     }
 
@@ -84,6 +75,7 @@ class {{modelName}}s extends Component
     {
         if ($id) {
             {{modelName}}::where('id', $id)->delete();
+             Starcho_TableRefresh($this);
         }
     }
 }

@@ -1,4 +1,4 @@
-<!-- Add Modal -->
+<!-- Add Modal Starcho -->
 <div wire:ignore.self class="modal fade" id="createDataModal" data-bs-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="createDataModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -11,14 +11,18 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button id="btn-close" type="button" wire:click.prevent="cancel()" class="btn btn-icon shadow-lg m-2" data-bs-dismiss="modal">❌ Close</button>
-                <button id="btn-store"  type="button" wire:click.prevent="store()" class="btn btn-icon shadow-lg m-2">Save ✅</button>
+                    <x-starchocom.widgets.admin.btn-forms>
+                    <x-slot name="label1"> {{ __('StarchoAdmin.forms.close') }}</x-slot>
+                    <x-slot name="label2"> {{ __('StarchoAdmin.forms.save') }}</x-slot>
+                    <x-slot name="event1">cancel</x-slot>
+                    <x-slot name="event2">store</x-slot>                 
+                </x-starchocom.widgets.admin.btn-forms>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Edit Modal -->
+<!-- Edit Modal Starcho -->
 <div wire:ignore.self class="modal fade" id="updateDataModal" data-bs-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
        <div class="modal-content">
@@ -32,8 +36,13 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button id="btn-close" type="button" wire:click.prevent="cancel()" class="btn btn-icon shadow-lg m-2" data-bs-dismiss="modal">❌ Close</button>
-                <button id="btn-update" type="button" wire:click.prevent="update()" class="btn btn-icon shadow-lg m-2">Save ✅</button>
+                <x-starchocom.widgets.admin.btn-forms>
+                    <x-slot name="label1"> {{ __('StarchoAdmin.forms.close') }}</x-slot>
+                    <x-slot name="label2"> {{ __('StarchoAdmin.forms.update') }}</x-slot>
+                    <x-slot name="event1">cancel</x-slot>
+                    <x-slot name="event2">update</x-slot>                 
+                </x-starchocom.widgets.admin.btn-forms>
+
             </div>
        </div>
     </div>

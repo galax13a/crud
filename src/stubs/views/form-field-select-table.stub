@@ -1,5 +1,5 @@
                  
                            <label for="table"></label>
                                <div class="form-group">
-                                <x-com-select-table table-name="{{table}}" id="{{column}}" display-name="name" />@error('{{column}}') <span class="error text-danger">{{ $message }}</span> @enderror
+                                <x-starchocom.widgets.admin.app.select  table-name="{{table}}" id="{{column}}" display-name="name" />@error('{{column}}') <span class="error text-danger">{{ $message }}</span> @enderror
                             </div>

@@ -1,0 +1,96 @@
+<?php 
+
+namespace {{tableNamespace}};
+
+use App\Exports\{{modelName}}Export;
+use Rappasoft\LaravelLivewireTables\DataTableComponent;
+use Rappasoft\LaravelLivewireTables\Views\Column;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Models\{{modelName}};
+use Illuminate\Database\Eloquent\Builder;
+
+class {{modelName}}Table extends DataTableComponent
+{
+    protected $model = {{modelName}}::class;
+    protected $listeners = ['StarchoTableRefresh' => '$refresh', 'StarchoDeleteTable' => 'DeleteTable'];
+
+    // Habilita la selección múltiple
+    public function configure(): void
+    {
+        $this->setPerPage(config('starcho.num_rows'));
+        $this->setPrimaryKey('id');
+        $this->setBulkActions([
+            'exportSelected' => '📄' .  __('StarchoAdmin.tables.export_selects'),
+            'exportAll' => '📑' . __('StarchoAdmin.tables.export_all'),
+            'deleteSelected' => '⛔️' . __('StarchoAdmin.tables.delete_records'),
+        ]);
+        $this->setPerPageAccepted([10, 25, 50, 100]);
+    }
+
+    /*
+    public function builder(): Builder
+    {       
+        return {{modelName}}::query()
+            ->where('user_id', auth()->user()->id);       
+    }
+    */
+
+    // Define las columnas
+    public function columns(): array
+    {
+        return [
+            {{columns}}
+        ];
+    }
+
+    // Acción para exportar filas seleccionadas
+    public function exportSelected()
+    {
+        $selectedIds = $this->getSelected();
+
+        if (!$selectedIds) {
+            Starcho_Notify($this, 'failure',  __('StarchoAdmin.tables.select_records'));
+            return false;
+        }
+
+        $this->clearSelected();
+
+        return Excel::download(new {{modelName}}Export($selectedIds), '{{modelName}}_selected.xlsx');
+    }
+
+    public function deleteSelected()
+    {
+        $selectedIds = $this->getSelected();
+
+        if (!$selectedIds) {
+
+            Starcho_Notify($this, 'failure',  __('StarchoAdmin.tables.select_rows'));
+            return false;
+        }
+
+        foreach ($selectedIds as $id) {
+            {{modelName}}::find($id)->delete();
+        }
+
+        $this->clearSelected();
+
+        $this->emit('refreshUserTable');
+        Starcho_Notify($this, 'success',  __('StarchoAdmin.tables.delete_records'));
+    }
+
+    // Acción para exportar todas las filas
+    public function exportAll()
+    {
+        return Excel::download(new {{modelName}}Export(), '{{modelName}}_all.xlsx');
+    }
+
+    public function updateTable($id = null)
+    {
+        $this->emit('starcho-edit', $id); // emit allways starcho-edit
+    }
+
+    public function DeleteTable($id = null)
+    {
+        $this->emit('StarchoDeleteRecord', $id); // emit allways starcho-delete
+    }
+}

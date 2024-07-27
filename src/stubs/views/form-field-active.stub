@@ -1,5 +1,5 @@
                   <label for="active"></label>                  
-                          <x-com-check :active="$active" />
+                          <x-starchocom.widgets.admin.app.check  :active="$active" />
                   @error('{{column}}') <span class="error text-danger">{{ $message }}</span> @enderror       
             
                     

@@ -15,5 +15,5 @@ class {{modelName}} extends VerifyRecordOwnership
 
     protected $fillable = [{{fillable}}]; // fillable2
 	{{relations}} 
-    {{booted_users}} 
+    {{booted_users}}     
 }

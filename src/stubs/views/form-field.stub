@@ -1,4 +1,4 @@
-                    <div class="form-group">
+                    <div class="form__box">
                         <label for="{{column}}"></label>
-                        <input wire:model.defer="{{column}}" type="{{type}}" class="form-control" id="{{column}}" placeholder="{{title}}">@error('{{column}}') <span class="error text-danger">{{ $message }}</span> @enderror
+                        <input wire:model.defer="{{column}}" type="{{type}}" class="form__input" id="{{column}}" placeholder="{{title}}">@error('{{column}}') <span class="error text-danger">{{ $message }}</span> @enderror
                     </div>

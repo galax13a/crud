@@ -221,20 +221,18 @@ abstract class LivewireGeneratorCommand extends Command
      * @param $name
      * @return string
      */
-    protected function _getTablePath($name, $layot='admin')
+    protected function _getTablePath($name)
     {
-        $ruta = $this->tableNamespace . '\\' . $layot;
-        return $this->makeDirectory(app_path($this->_getNamespacePath($ruta) . "{$name}Table.php"));
+        return $this->makeDirectory(app_path($this->_getNamespacePath($this->tableNamespace) . "{$name}Table.php"));
     }
 
     /**
      * @param $name
      * @return string
      */
-    protected function _getTableExportPath($name, $layot='admin')
+    protected function _getTableExportPath($name)
     {
-        $ruta = $this->exportTableNamespace . '\\' . $layot;
-        return $this->makeDirectory(app_path($this->_getNamespacePath($ruta) . "{$name}Export.php"));
+        return $this->makeDirectory(app_path($this->_getNamespacePath($this->exportTableNamespace) . "{$name}Export.php"));
     }
 
     /**
@@ -274,23 +272,23 @@ abstract class LivewireGeneratorCommand extends Command
     }
 
     protected function generateColumns()
-{
-    $columns = [];
-    foreach ($this->getFilteredColumns() as $column) {
-        if (in_array($column, ['id', 'created_at', 'updated_at'])) {
-            $columns[] = "Column::make('" . ucfirst(str_replace('_', ' ', $column)) . "', '$column')->sortable()";
-        } else {
-            $columns[] = "Column::make('" . ucfirst(str_replace('_', ' ', $column)) . "', '$column')->sortable()->searchable()";
+    {
+        $columns = [];
+        foreach ($this->getFilteredColumns() as $column) {
+            if (in_array($column, ['id', 'created_at', 'updated_at'])) {
+                $columns[] = "Column::make('" . ucfirst(str_replace('_', ' ', $column)) . "', '$column')->sortable()";
+            } else {
+                $columns[] = "Column::make('" . ucfirst(str_replace('_', ' ', $column)) . "', '$column')->sortable()->searchable()";
+            }
         }
+
+        // Agrega la columna de acciones al final
+        $columns[] = "Column::make('Actions', 'id')->format(function (\$value, \$column, \$row) {
+            return view('livewire.starcho-btn-crud', ['id' => \$value, 'name' => \$column->comment]);
+        })";
+
+        return implode(",\n\t\t\t", $columns);
     }
-
-    // Agrega la columna de acciones al final
-    $columns[] = "Column::make('Actions', 'id')->format(function (\$value, \$column, \$row) {
-        return view('livewire.starcho-btn-crud', ['id' => \$value, 'name' => \$column->comment]);
-    })";
-
-    return implode(",\n\t\t\t", $columns);
-}
 
 
     /**
@@ -300,9 +298,6 @@ abstract class LivewireGeneratorCommand extends Command
     protected function buildReplacements() // genera las variables del controladoe livewire ........ #live
     {
 
-        //if()
-        //{{modelNamePluralLowerCase}}' => {{modelName}}::latest()
-
         if ($this->hasUserRelation()) {  // si existe con user la relacion para mejorar el filtrado
             $head_model_render = "'" . Str::camel(Str::plural($this->name)) . "' => " . "{$this->name}::with('user')->latest()";
         } else {
@@ -310,21 +305,16 @@ abstract class LivewireGeneratorCommand extends Command
         }
 
         $ruta_livewire = $this->ruta ? Str::kebab($this->ruta) : $this->name; // Ruta predeterminada si no se proporciona una
-
-        $export_TableNamespace = $this->exportTableNamespace . '\\' . $this->layout;
         $table_Namespace = $this->tableNamespace . '\\' . $this->layout;
-        $table_NamespaceLivewire = $this->layout . '.' . strtolower(substr(Str::plural($this->name), 0, -1)) . '-table';
-        $tableNamespace = $this->tableNamespace . '\\' . $this->layout;
-       
+        $table_wire = $this->layout . '.'.$this->name;
+
         return [
             '{{layout}}' => $this->layout,
             '{{modelName}}' => $this->name,
             '{{modelTitle}}' => Str::title(Str::snake($this->name, ' ')),
             '{{modelNamespace}}' => $this->modelNamespace,
-            '{{Namespace_Table}}' => $table_Namespace,
-            '{{Namespace_TableExport}}' => $export_TableNamespace,
-            '{{tableNamespaceLivewire}}' => $table_NamespaceLivewire,
-            '{{tableNamespace}}' => $tableNamespace,
+            '{{tableNamespaceLivewire}}' => $table_wire,
+            '{{tableNamespace}}' => $table_Namespace,
             '{{controllerNamespace}}' => $this->controllerNamespace,
             '{{modelNamePluralLowerCase}}' => Str::camel(Str::plural($ruta_livewire)),
             '{{componentelivewire}}' => Str::camel(Str::plural($this->name)),
@@ -333,7 +323,7 @@ abstract class LivewireGeneratorCommand extends Command
             '{{modelNameLowerCase}}' => Str::camel($this->name),
             '{{modelRoute}}' => $this->options['route'] ?? Str::kebab(Str::plural($this->name)),
             '{{modelView}}' => Str::kebab($this->name),
-            '{{columns}}' => $this->generateColumns(),  // Agrega esto
+            '{{columns}}' => $this->generateColumns(),  // column table
         ];
     }
 
@@ -374,20 +364,6 @@ abstract class LivewireGeneratorCommand extends Command
         ];
     }
 
-    protected function isEnumColumn($column)
-    {
-        $type = DB::select("SHOW COLUMNS FROM `{$this->table}` WHERE Field = '{$column}'")[0]->Type;
-        return Str::startsWith($type, 'enum');
-    }
-    
-    protected function getEnumOptions($table, $column)
-    {
-        $type = DB::select("SHOW COLUMNS FROM `{$table}` WHERE Field = '{$column}'")[0]->Type;
-        preg_match('/^enum\((.*)\)$/', $type, $matches);
-        $enumValues = str_getcsv($matches[1], ',', "'");
-        return $enumValues;
-    }
-    
 
     /**
      * Build the form fields for form.
@@ -398,8 +374,7 @@ abstract class LivewireGeneratorCommand extends Command
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      *
      */
-
-     protected function getField($title, $column, $type = 'form-field', $table = 'null')
+    protected function getField($title, $column, $type = 'form-field', $table = 'null')
 {
     $replace = array_merge($this->buildReplacements(), [
         '{{title}}' => $title,
@@ -425,16 +400,16 @@ abstract class LivewireGeneratorCommand extends Command
                 );
             }
         }
-    } elseif ($this->isEnumColumn($column)) {
-        $enumOptions = $this->getEnumOptions($this->table, $column);
-        $replace['{{options}}'] = implode(',', $enumOptions);
+    }
 
+    // El resto del código permanece igual
+    elseif ($column == 'date') {
         return str_replace(
             array_keys($replace),
             array_values($replace),
-            $this->getStub("views/{$type}-enum-table")
+            $this->getStub("views/{$type}-date")
         );
-    } elseif ($column == 'date' || $column == 'birthday') {
+    } elseif ($column == 'birthday') {
         return str_replace(
             array_keys($replace),
             array_values($replace),
@@ -454,7 +429,6 @@ abstract class LivewireGeneratorCommand extends Command
         );
     }
 }
-
     /**
      * @param $title
      * @return mixed
