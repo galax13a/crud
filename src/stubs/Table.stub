@@ -2,7 +2,7 @@
 
 namespace {{tableNamespace}};
 
-use App\Exports\{{modelName}}Export;
+use App\Exports\{{layot_admin}}\{{modelName}}Export;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use Maatwebsite\Excel\Facades\Excel;
@@ -34,6 +34,7 @@ class {{modelName}}Table extends DataTableComponent
             ->where('user_id', auth()->user()->id);       
     }
     */
+    {{builder}}
 
     // Define las columnas
     public function columns(): array

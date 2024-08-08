@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Exports\{{layot_admin}};
+
+use App\Models\{{modelName}};
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\Exportable;
+
+class {{modelName}}Export implements FromCollection
+{
+    use Exportable;
+
+    protected $ids;
+
+    public function __construct(array $ids = null)
+    {
+        $this->ids = $ids;
+    }
+
+    public function collection()
+    {
+        if ($this->ids) {
+            return {{modelName}}::whereIn('id', $this->ids)->get();
+        }
+        return {{modelName}}::all();
+    }
+}

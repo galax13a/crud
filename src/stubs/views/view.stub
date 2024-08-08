@@ -1,11 +1,11 @@
 @section('title', __('{{modelTitle}}s'))
-<div class="container-fluid">
+<div id="view">
 	<div class="row justify-content-center">
 
 			<div class="col-md-12 my-2" id="view-js-live-pages">
 				<div class="card">
 					<div class="card-header bg-transparent" >					
-					<x-btnmore/>					
+					<x-starchocom.widgets.admin.forms.btnew/>					
 				</div>
 				<div class="card-body">
 						@include('livewire.{{modelNamePluralLowerCase}}.modals')

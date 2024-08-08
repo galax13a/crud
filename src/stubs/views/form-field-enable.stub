@@ -1,0 +1,5 @@
+                  <label for="enable"></label>                  
+                          <x-starchocom.widgets.admin.forms.enable  :enable="$enable" />
+                  @error('{{column}}') <span class="error text-danger">{{ $message }}</span> @enderror       
+            
+                    

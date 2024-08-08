@@ -11,12 +11,12 @@
                 </form>
             </div>
             <div class="modal-footer">
-                    <x-starchocom.widgets.admin.btn-forms>
+                    <x-starchocom.widgets.admin.forms.btnmodals>
                     <x-slot name="label1"> {{ __('StarchoAdmin.forms.close') }}</x-slot>
                     <x-slot name="label2"> {{ __('StarchoAdmin.forms.save') }}</x-slot>
                     <x-slot name="event1">cancel</x-slot>
                     <x-slot name="event2">store</x-slot>                 
-                </x-starchocom.widgets.admin.btn-forms>
+                </x-starchocom.widgets.admin.forms.btnmodals>
             </div>
         </div>
     </div>
@@ -36,12 +36,12 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <x-starchocom.widgets.admin.btn-forms>
+                <x-starchocom.widgets.admin.forms.btnmodals>
                     <x-slot name="label1"> {{ __('StarchoAdmin.forms.close') }}</x-slot>
                     <x-slot name="label2"> {{ __('StarchoAdmin.forms.update') }}</x-slot>
                     <x-slot name="event1">cancel</x-slot>
                     <x-slot name="event2">update</x-slot>                 
-                </x-starchocom.widgets.admin.btn-forms>
+                </x-starchocom.widgets.admin.forms.btnmodals>
 
             </div>
        </div>

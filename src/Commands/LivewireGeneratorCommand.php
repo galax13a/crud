@@ -87,7 +87,7 @@ abstract class LivewireGeneratorCommand extends Command
      * Application Layout
      * @var string
      */
-    protected $layout = 'layouts.app';
+    protected $layout = 'layouts.temas.starcho.admin.app';
 
     /**
      * Custom Options name
@@ -221,7 +221,7 @@ abstract class LivewireGeneratorCommand extends Command
      * @param $name
      * @return string
      */
-    protected function _getTablePath($name, $layot='admin')
+    protected function _getTablePath($name, $layot = 'admin')
     {
         $ruta = $this->tableNamespace . '\\' . $layot;
         return $this->makeDirectory(app_path($this->_getNamespacePath($ruta) . "{$name}Table.php"));
@@ -231,7 +231,7 @@ abstract class LivewireGeneratorCommand extends Command
      * @param $name
      * @return string
      */
-    protected function _getTableExportPath($name, $layot='admin')
+    protected function _getTableExportPath($name, $layot = 'admin')
     {
         $ruta = $this->exportTableNamespace . '\\' . $layot;
         return $this->makeDirectory(app_path($this->_getNamespacePath($ruta) . "{$name}Export.php"));
@@ -273,24 +273,68 @@ abstract class LivewireGeneratorCommand extends Command
         //return $this->makeDirectory(resource_path("views/livewire/{$ruta}/{$name}s/{$view}.blade.php"));
     }
 
-    protected function generateColumns()
-{
-    $columns = [];
-    foreach ($this->getFilteredColumns() as $column) {
-        if (in_array($column, ['id', 'created_at', 'updated_at'])) {
-            $columns[] = "Column::make('" . ucfirst(str_replace('_', ' ', $column)) . "', '$column')->sortable()";
-        } else {
-            $columns[] = "Column::make('" . ucfirst(str_replace('_', ' ', $column)) . "', '$column')->sortable()->searchable()";
+    protected function generateColumnsTables() // generate  columns table.. starcho
+    {
+        $columns = [];
+        foreach ($this->getFilteredColumns() as $column) {
+            if ($column === 'active') {
+                $columns[] = "Column::make('Active', 'active')->format(function (\$value, \$column, \$row) {
+                    return view('components.starchocom.widgets.admin.table.active', ['active' => \$value]);
+                })";
+            } elseif ($column === 'enable') {
+                $columns[] = "Column::make('Enable', 'enable')->format(function (\$value, \$column, \$row) {
+                    return view('components.starchocom.widgets.admin.table.enable', ['enable' => \$value]);
+                })";
+            } elseif ($column === 'svg') {
+                $columns[] = "Column::make('Svg', 'svg')->sortable()->searchable()->format(function (\$value, \$column, \$row) {
+                    if (!\$value) {
+                        return '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" class=\"bi bi-exclamation-circle\" viewBox=\"0 0 16 16\">
+                            <path d=\"M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z\"/>
+                            <path d=\"M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 0 1 1.8 0l-.35 3.602a.552.552 0 0 1-1.1 0L7.1 4.995z\"/>
+                        </svg>';
+                    }
+                    \$base64Image = 'data:image/svg+xml;base64,' . base64_encode(\$value);
+                    return '<img src=\"' . \$base64Image . '\" alt=\"SVG Image ' . \$column->name . '\" title=\"' . \$column->name . '\">';
+                })->html()";
+            } elseif (Str::endsWith($column, '_id') && $column !== 'user_id') {
+                $relationName = Str::replaceLast('_id', '', $column);
+                $columns[] = "Column::make('" . ucfirst(str_replace('_', ' ', $column)) . "', '$column')
+                ->sortable()
+                ->searchable()
+                ->format(function (\$value, \$column, \$row){
+                    return '<span>' . \$column->{$relationName}->name . '</span>';
+                })
+                ->html()";
+            } elseif ($column === 'icon') {
+                $columns[] = "Column::make('Icon', 'icon')->sortable()->searchable()->format(function (\$value, \$column, \$row) {
+                    return '<i title=\"' . \$column->name . '\" class=\"' . \$value . ' fs-3\"></i>';
+                })->html()";
+            } elseif (in_array($column, ['url', 'link', 'www', 'site'])) {
+                $columns[] = "Column::make('" . ucfirst(str_replace('_', ' ', $column)) . "', '$column')->sortable()->searchable()->format(function (\$value, \$column, \$row) {
+                    return '<a href=\"' . \$value . '\" target=\"_blank\" title=\"' . \$column->name . '\">' . \$value . '</a>';
+                })->html()";
+            } elseif ($column === 'site') {
+                $columns[] = "Column::make('Site', 'site')->sortable()->searchable()->format(function (\$value, \$column, \$row) {
+                    return '<a href=\"' . \$value . '\" target=\"_blank\" title=\"' . \$column->name . '\">' . \$value . '</a>';
+                })->html()";
+            } elseif ($column === 'target') {
+                $columns[] = "Column::make('Target', 'target')->sortable()->searchable()->format(function (\$value, \$column, \$row) {
+                    return '<span class=\"badge text-bg-warning\">' . \$value . '</span>';
+                })->html()";
+            } elseif (in_array($column, ['id', 'created_at', 'updated_at'])) {
+                $columns[] = "Column::make('" . ucfirst(str_replace('_', ' ', $column)) . "', '$column')->sortable()";
+            } else {
+                $columns[] = "Column::make('" . ucfirst(str_replace('_', ' ', $column)) . "', '$column')->sortable()->searchable()";
+            }
         }
+
+        // Agrega la columna de acciones al final
+        $columns[] = "Column::make('Actions', 'id')->format(function (\$value, \$column, \$row) {
+            return view('livewire.starchocom.widgets.admin.table.btncrud', ['id' => \$value, 'name' => \$column->name]);
+        })";
+
+        return implode(",\n\t\t\t", $columns);
     }
-
-    // Agrega la columna de acciones al final
-    $columns[] = "Column::make('Actions', 'id')->format(function (\$value, \$column, \$row) {
-        return view('livewire.starcho-btn-crud', ['id' => \$value, 'name' => \$column->comment]);
-    })";
-
-    return implode(",\n\t\t\t", $columns);
-}
 
 
     /**
@@ -311,83 +355,76 @@ abstract class LivewireGeneratorCommand extends Command
 
         $ruta_livewire = $this->ruta ? Str::kebab($this->ruta) : $this->name; // Ruta predeterminada si no se proporciona una
 
-        $export_TableNamespace = $this->exportTableNamespace . '\\' . $this->layout;
-        $table_Namespace = $this->tableNamespace . '\\' . $this->layout;
-        $table_NamespaceLivewire = $this->layout . '.' . strtolower(substr(Str::plural($this->name), 0, -1)) . '-table';
+        $Namespace_TableExport = $this->exportTableNamespace . '\\' . $this->layout;
         $tableNamespace = $this->tableNamespace . '\\' . $this->layout;
-       
+        $table_NamespaceLivewire = $this->layout . '.' . strtolower($this->name) . '-table';
+
+        $nombre = $this->name;
+        if (Str::endsWith($nombre, 's')) {
+            $pluralNombre = $nombre;
+        } else {
+            $pluralNombre = Str::plural($nombre);
+        }
+
+        if ($this->layout === 'app') $app = 'temas.starcho.admin.app';
+        else $app = $this->layout;
+
         return [
-            '{{layout}}' => $this->layout,
+            '{{layot_admin}}' => $this->layout,
+            '{{layout}}' => $app,
             '{{modelName}}' => $this->name,
             '{{modelTitle}}' => Str::title(Str::snake($this->name, ' ')),
             '{{modelNamespace}}' => $this->modelNamespace,
-            '{{Namespace_Table}}' => $table_Namespace,
-            '{{Namespace_TableExport}}' => $export_TableNamespace,
+            '{{Namespace_TableExport}}' => $Namespace_TableExport,
             '{{tableNamespaceLivewire}}' => $table_NamespaceLivewire,
             '{{tableNamespace}}' => $tableNamespace,
             '{{controllerNamespace}}' => $this->controllerNamespace,
             '{{modelNamePluralLowerCase}}' => Str::camel(Str::plural($ruta_livewire)),
-            '{{componentelivewire}}' => Str::camel(Str::plural($this->name)),
+            '{{componentelivewire}}' => Str::camel($pluralNombre), //Str::camel(Str::plural($this->name)),
             '{{modelNamePluralUpperCase}}' => ucfirst(Str::plural($this->name)),
             '{{headRender}}' => $head_model_render,
             '{{modelNameLowerCase}}' => Str::camel($this->name),
             '{{modelRoute}}' => $this->options['route'] ?? Str::kebab(Str::plural($this->name)),
             '{{modelView}}' => Str::kebab($this->name),
-            '{{columns}}' => $this->generateColumns(),  // Agrega esto
+            '{{columns}}' => $this->generateColumnsTables(),
+            '{{builder}}' => $this->builderTable(),
         ];
     }
 
-    protected function Starcho_RelationTable($column)
+    protected function builderTable()
     {
-        $db = DB::getDatabaseName();
-        $table = $this->table;
-    
-        $sql = "
-        SELECT REFERENCED_TABLE_NAME 
-        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
-        WHERE TABLE_SCHEMA = '$db' 
-          AND TABLE_NAME = '$table' 
-          AND COLUMN_NAME = '$column' 
-          AND REFERENCED_TABLE_NAME IS NOT NULL";
-    
-        $result = DB::select($sql);
-    
-        if (!empty($result)) {
-            return [
-                'type' => 'belongsTo',
-                'related_table' => $result[0]->REFERENCED_TABLE_NAME
-            ];
+        // Obtén las columnas del modelo
+        $columns = $this->getColumns();
+
+        // Inicia el query del modelo con el nombre del modelo correcto
+        $query = "return {$this->name}::query()";
+
+        // Bandera para saber si existe una columna user_id
+        $hasUserId = false;
+
+        // Recorre las columnas y agrega relaciones dinámicas para las que terminan en '_id'
+        foreach ($columns as $column) {
+            if (Str::endsWith($column->Field, '_id')) {
+                // Si la columna es 'user_id', marca la bandera
+                if ($column->Field === 'user_id') {
+                    $hasUserId = true;
+                } else {
+                    // Para otras columnas con '_id', se asume una relación belongsTo
+                    $relation = Str::camel(str_replace('_id', '', $column->Field));
+                    $query .= "->with('{$relation}')";
+                }
+            }
         }
-    
-        // Si la columna termina en '_id' pero no tiene una relación definida
-        if (Str::endsWith($column, '_id')) {
-            $potentialTable = Str::plural(Str::replaceLast('_id', '', $column));
-            return [
-                'type' => 'potentialBelongsTo',
-                'related_table' => $potentialTable
-            ];
+
+        // Si existe la columna 'user_id', agregar la condición where
+        if ($hasUserId) {
+            $query .= "->where('user_id', auth()->user()->id)";
         }
-    
-        return [
-            'type' => null,
-            'related_table' => null
-        ];
+
+        // Terminar el query y agregar el método builder con el nombre de modelo correcto
+        return "public function builder(): Builder\n{\n    {$query};\n}\n";
     }
 
-    protected function isEnumColumn($column)
-    {
-        $type = DB::select("SHOW COLUMNS FROM `{$this->table}` WHERE Field = '{$column}'")[0]->Type;
-        return Str::startsWith($type, 'enum');
-    }
-    
-    protected function getEnumOptions($table, $column)
-    {
-        $type = DB::select("SHOW COLUMNS FROM `{$table}` WHERE Field = '{$column}'")[0]->Type;
-        preg_match('/^enum\((.*)\)$/', $type, $matches);
-        $enumValues = str_getcsv($matches[1], ',', "'");
-        return $enumValues;
-    }
-    
 
     /**
      * Build the form fields for form.
@@ -399,61 +436,119 @@ abstract class LivewireGeneratorCommand extends Command
      *
      */
 
-     protected function getField($title, $column, $type = 'form-field', $table = 'null')
-{
-    $replace = array_merge($this->buildReplacements(), [
-        '{{title}}' => $title,
-        '{{column}}' => $column,
-    ]);
+    protected function getField($title, $column, $type = 'form-field', $table = 'null')
+    {
+        $replace = array_merge($this->buildReplacements(), [
+            '{{title}}' => $title,
+            '{{column}}' => $column,
+        ]);
 
-    if (Str::endsWith($column, '_id')) {
-        $relation = $this->Starcho_RelationTable($column);
-        
-        if ($relation['type'] === 'belongsTo' || $relation['type'] === 'potentialBelongsTo') {
-            if ($relation['related_table'] !== $this->table) {
-                $table = $relation['related_table'];
-                
-                $replace_select_table = array_merge($this->buildReplacements(), [
-                    '{{table}}' => $table,
-                    '{{column}}' => $column,
-                ]);
+        if (Str::endsWith($column, '_id')) {
+            $relation = $this->Starcho_RelationTable($column);
 
-                return str_replace(
-                    array_keys($replace_select_table),
-                    array_values($replace_select_table),
-                    $this->getStub("views/{$type}-select-table")
-                );
+            if ($relation['type'] === 'belongsTo' || $relation['type'] === 'potentialBelongsTo') {
+                if ($relation['related_table'] !== $this->table) {
+                    $table = $relation['related_table'];
+
+                    $replace_select_table = array_merge($this->buildReplacements(), [
+                        '{{table}}' => $table,
+                        '{{column}}' => $column,
+                    ]);
+
+                    return str_replace(
+                        array_keys($replace_select_table),
+                        array_values($replace_select_table),
+                        $this->getStub("views/{$type}-select-table")
+                    );
+                }
             }
-        }
-    } elseif ($this->isEnumColumn($column)) {
-        $enumOptions = $this->getEnumOptions($this->table, $column);
-        $replace['{{options}}'] = implode(',', $enumOptions);
+        } elseif ($this->isEnumColumn($column)) {
+            $enumOptions = $this->getEnumOptions($this->table, $column);
+            $replace['{{options}}'] = implode(',', $enumOptions);
 
-        return str_replace(
-            array_keys($replace),
-            array_values($replace),
-            $this->getStub("views/{$type}-enum-table")
-        );
-    } elseif ($column == 'date' || $column == 'birthday') {
-        return str_replace(
-            array_keys($replace),
-            array_values($replace),
-            $this->getStub("views/{$type}-date")
-        );
-    } elseif ($column == 'active') {
-        return str_replace(
-            array_keys($replace),
-            array_values($replace),
-            $this->getStub("views/{$type}-active")
-        );
-    } else {
-        return str_replace(
-            array_keys($replace),
-            array_values($replace),
-            $this->getStub("views/{$type}")
-        );
+            return str_replace(
+                array_keys($replace),
+                array_values($replace),
+                $this->getStub("views/{$type}-enum-table")
+            );
+        } elseif ($column == 'date' || $column == 'birthday') {
+            return str_replace(
+                array_keys($replace),
+                array_values($replace),
+                $this->getStub("views/{$type}-date")
+            );
+        } elseif ($column == 'active') {
+            return str_replace(
+                array_keys($replace),
+                array_values($replace),
+                $this->getStub("views/{$type}-active")
+            );
+        } elseif ($column == 'enable') {
+            return str_replace(
+                array_keys($replace),
+                array_values($replace),
+                $this->getStub("views/{$type}-enable")
+            );
+        } else {
+            return str_replace(
+                array_keys($replace),
+                array_values($replace),
+                $this->getStub("views/{$type}")
+            );
+        }
     }
-}
+
+    protected function Starcho_RelationTable($column)
+    {
+        $db = DB::getDatabaseName();
+        $table = $this->table;
+
+        $sql = "
+        SELECT REFERENCED_TABLE_NAME 
+        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
+        WHERE TABLE_SCHEMA = '$db' 
+          AND TABLE_NAME = '$table' 
+          AND COLUMN_NAME = '$column' 
+          AND REFERENCED_TABLE_NAME IS NOT NULL";
+
+        $result = DB::select($sql);
+
+        if (!empty($result)) {
+            return [
+                'type' => 'belongsTo',
+                'related_table' => $result[0]->REFERENCED_TABLE_NAME
+            ];
+        }
+
+        // Si la columna termina en '_id' pero no tiene una relación definida
+        if (Str::endsWith($column, '_id')) {
+            $potentialTable = Str::plural(Str::replaceLast('_id', '', $column));
+            return [
+                'type' => 'potentialBelongsTo',
+                'related_table' => $potentialTable
+            ];
+        }
+
+        return [
+            'type' => null,
+            'related_table' => null
+        ];
+    }
+
+    protected function isEnumColumn($column)
+    {
+        $type = DB::select("SHOW COLUMNS FROM `{$this->table}` WHERE Field = '{$column}'")[0]->Type;
+        return Str::startsWith($type, 'enum');
+    }
+
+    protected function getEnumOptions($table, $column)
+    {
+        $type = DB::select("SHOW COLUMNS FROM `{$table}` WHERE Field = '{$column}'")[0]->Type;
+        preg_match('/^enum\((.*)\)$/', $type, $matches);
+        $enumValues = str_getcsv($matches[1], ',', "'");
+        return $enumValues;
+    }
+
 
     /**
      * @param $title
@@ -597,31 +692,15 @@ abstract class LivewireGeneratorCommand extends Command
         return in_array('user_id', $columns);
     }
 
-    /*
-    protected function generateBootedCode() // users BootedCode .. 
-    {
-        if ($this->hasUserRelation()) {
-            return "   protected static function booted() {
-            static::creating(function (\$model) {
-                if (auth()->check()) {
-                    \$model->user_id = auth()->id();
-                }
-            });
-        }";
-        } else {
-            return "// booted sin users []";
-        }
-    }
-    */
 
-    protected function generateBootedCode()
+    protected function generateBootedCode() // user Boot
     {
         if ($this->hasUserRelation()) {
             return "
     protected static function booted() // Starcho booted
     {
         // Apply global scope to filter by authenticated user
-        static::addGlobalScope('user_id', function (Illuminate\Database\Eloquent\Builder \$builder) {
+        static::addGlobalScope('user_id', function (Builder \$builder) {
             if (auth()->check()) {
                 \$builder->where('user_id', auth()->id());
             } else {
@@ -637,7 +716,7 @@ abstract class LivewireGeneratorCommand extends Command
 
         static::updating(function (\$model) {
             if (auth()->check()) {
-                if (\$model->sent_by != auth()->id()) {
+                if (\$model->user_id != auth()->id()) {
                     abort(500, 'Unauthorized action.');
                 }
             }
@@ -645,7 +724,7 @@ abstract class LivewireGeneratorCommand extends Command
 
         static::deleting(function (\$model) {
             if (auth()->check()) {
-                if (\$model->sent_by != auth()->id()) {
+                if (\$model->user_id != auth()->id()) {
                     return response()->json([
                         'error' => 'Unauthorized action. Delete Uban'
                     ], 500);

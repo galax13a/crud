@@ -1,11 +1,11 @@
-<label for="{{column}}">{{title}}</label>
-<div class="form-group">
-    <select wire:model.defer="{{column}}" name="{{column}}" id="{{column}}" class="form-control">
-        @foreach (explode(',', '{{options}}') as $option)
-            <option value="{{ $option }}">{{ $option }}</option>
-        @endforeach
-    </select>
-    @error('{{column}}')
-        <span class="error text-danger">{{ $message }}</span>
-    @enderror
-</div>
+            <label for="{{column}}">{{title}}</label>
+            <div class="form-group">
+                <select wire:model.defer="{{column}}" name="{{column}}" id="{{column}}" class="form-control">
+                    @foreach (explode(',', '{{options}}') as $option)
+                        <option value="{{ $option }}">{{ $option }}</option>
+                    @endforeach
+                </select>
+                @error('{{column}}')
+                    <span class="error text-danger">{{ $message }}</span>
+                @enderror
+            </div>

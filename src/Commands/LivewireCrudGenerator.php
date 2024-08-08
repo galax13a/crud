@@ -5,6 +5,8 @@ namespace Flightsadmin\LivewireCrud\Commands;
 use Illuminate\Support\Str;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Artisan;
+use Spatie\Permission\Models\Permission;
+use Illuminate\Support\Facades\DB;
 
 class LivewireCrudGenerator extends LivewireGeneratorCommand
 {
@@ -17,7 +19,7 @@ class LivewireCrudGenerator extends LivewireGeneratorCommand
     //protected $signature = 'crud:generate {name : Table name} {layout=app : Layout name} {ruta=admin : router name}';
     protected $signature = 'crud:generate';
     protected $layout, $ruta;
-    protected $description = 'Generate Livewire Component and CRUD operations';
+    protected $description = 'Generate Livewire Component and CRUD operations | Starcho V1';
 
 
     public function handle()
@@ -31,7 +33,7 @@ class LivewireCrudGenerator extends LivewireGeneratorCommand
         }
 
         $this->layout = $this->ask('Which layout would you like to use? The main app is the admin layout is app or admin', 'admin');
-        $this->ruta = $this->ask('What route would you like to use? admin.'.$this->table.'', 'admin.'.$this->table);
+        $this->ruta = $this->ask('What route would you like to use? '.$this->layout .'.'.$this->table.'', $this->layout . '.' . $this->table);
         $ruta =  $this->ruta;
 
         if (!$this->tableExists()) {
@@ -103,13 +105,7 @@ class LivewireCrudGenerator extends LivewireGeneratorCommand
         }
         $layoutContents = $this->filesystem->get($layoutFile);
         $ruta_can = str_replace('/', '.', $ruta2);
-
-       
-/*
-        $navItemStub = "\t\t\t\t\t\t<li class=\"nav-item\">
-                                    <a href=\"{{ url('/" . $ruta . "') }}\" class=\"nav-link\">🟣 " . ucfirst($this->table) . "</a>
-                            </li>";
-*/
+        
         $ruta = str_replace('.', '/', $ruta);
         $navItemStub = "\t\t\t\t\t\t<li class=\"nav-item\">
                                 <a href=\"{{ route('" . $ruta_can . "') }}\" class=\"nav-link\" target=\"_blank\" target=\"_blank\">🟣 " . ucfirst($this->table) . "</a>
@@ -123,10 +119,17 @@ class LivewireCrudGenerator extends LivewireGeneratorCommand
             $this->warn('Nav link inserted: <info>' . $layoutFile . '</info>');
         }
 
-        $this->info('');
-        $this->info('Livewire Component & CRUD Generated Successfully.');
+        $permissionExists = DB::table('permissions')->where('name', $ruta_can)->exists();
+        if (!$permissionExists) {
+            // Si no existe, crea el permiso y asigna los roles
+            Permission::firstOrCreate(['name' => $ruta_can, 'description' => 'Admin ->'.$ruta_can])->syncRoles(['root', 'admin']);
+        }
+        
+        Artisan::call('cache:forget spatie.permission.cache');               
         Artisan::call('route:cache'); // reset route cache
-
+        $this->info('');
+        $this->info(' Starcho -> Livewire Component & CRUD Generated Successfully.');
+        //finish crud
         return true;
     }
 
@@ -188,7 +191,7 @@ class LivewireCrudGenerator extends LivewireGeneratorCommand
         $TableExportTemplate = str_replace(
             array_keys($replace),
             array_values($replace),
-            $this->getStub('Export')
+            $this->getStub('TableExport')
         );
 
         $this->warn('Creating: <info>Livewire Component...</info>');
