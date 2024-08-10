@@ -1,12 +1,12 @@
 <?php
 
 namespace App\Exports\{{layot_admin}};
-
+//Generador ExportTable Starcho V1.0
 use App\Models\{{modelName}};
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\Exportable;
 
-class {{modelName}}Export implements FromCollection
+class {{modelName}}sExport implements FromCollection
 {
     use Exportable;
 

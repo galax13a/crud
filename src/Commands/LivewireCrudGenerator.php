@@ -107,9 +107,18 @@ class LivewireCrudGenerator extends LivewireGeneratorCommand
         $ruta_can = str_replace('/', '.', $ruta2);
         
         $ruta = str_replace('.', '/', $ruta);
+        $ruter = route($ruta_can);
+        /*
         $navItemStub = "\t\t\t\t\t\t<li class=\"nav-item\">
-                                <a href=\"{{ route('" . $ruta_can . "') }}\" class=\"nav-link\" target=\"_blank\" target=\"_blank\">🟣 " . ucfirst($this->table) . "</a>
-                        </li>";       
+                                <a href=\"{{ route('" . $ruta_can . "') }}\" class=\"nav-link\" target=\"_blank\" target=\"_blank\"><i class=\"bx bxs-cat fs-5 mx-2\"></i> " . ucfirst($this->table) . "</a>
+                        </li>";  
+                        */
+        $navItemStub = "\t\t\t\t\t\t<li class=\"nav-item\">
+                    <a href=\"" . $ruter . "\" class=\"nav-link\" target=\"_blank\">
+                        <i class=\"bx bxs-cat fs-5 mx-2\"></i> " . ucfirst($this->table) . "
+                    </a>
+                    </li>";
+                                    
 
         $navItemHook = '<!--Nav Bar Hooks - Do not delete!!-->';
 
@@ -124,7 +133,7 @@ class LivewireCrudGenerator extends LivewireGeneratorCommand
             // Si no existe, crea el permiso y asigna los roles
             Permission::firstOrCreate(['name' => $ruta_can, 'description' => 'Admin ->'.$ruta_can])->syncRoles(['root', 'admin']);
         }
-        
+
         Artisan::call('cache:forget spatie.permission.cache');               
         Artisan::call('route:cache'); // reset route cache
         $this->info('');

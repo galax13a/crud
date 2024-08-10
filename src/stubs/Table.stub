@@ -1,15 +1,15 @@
 <?php 
 
 namespace {{tableNamespace}};
-
-use App\Exports\{{layot_admin}}\{{modelName}}Export;
+// Generate Tables Starcho v1
+use App\Exports\{{layot_admin}}\{{modelName}}sExport;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\{{modelName}};
 use Illuminate\Database\Eloquent\Builder;
 
-class {{modelName}}Table extends DataTableComponent
+class {{modelName}}sTable extends DataTableComponent
 {
     protected $model = {{modelName}}::class;
     protected $listeners = ['StarchoTableRefresh' => '$refresh', 'StarchoDeleteTable' => 'DeleteTable'];
@@ -56,7 +56,7 @@ class {{modelName}}Table extends DataTableComponent
 
         $this->clearSelected();
 
-        return Excel::download(new {{modelName}}Export($selectedIds), '{{modelName}}_selected.xlsx');
+        return Excel::download(new {{modelName}}sExport($selectedIds), '{{modelName}}_selected.xlsx');
     }
 
     public function deleteSelected()
@@ -82,7 +82,7 @@ class {{modelName}}Table extends DataTableComponent
     // Acción para exportar todas las filas
     public function exportAll()
     {
-        return Excel::download(new {{modelName}}Export(), '{{modelName}}_all.xlsx');
+        return Excel::download(new {{modelName}}sExport(), '{{modelName}}_all.xlsx');
     }
 
     public function updateTable($id = null)

@@ -10,7 +10,7 @@
 				<div class="card-body">
 						@include('livewire.{{modelNamePluralLowerCase}}.modals')
 						<div>
-						   		<div wire:key='table-{{modelTitle}}'>
+						   		<div wire:key='Starchotable-{{modelTitle}}'>
 								@livewire('tables.{{tableNamespaceLivewire}}')
 						</div>
 				</div>

@@ -224,7 +224,7 @@ abstract class LivewireGeneratorCommand extends Command
     protected function _getTablePath($name, $layot = 'admin')
     {
         $ruta = $this->tableNamespace . '\\' . $layot;
-        return $this->makeDirectory(app_path($this->_getNamespacePath($ruta) . "{$name}Table.php"));
+        return $this->makeDirectory(app_path($this->_getNamespacePath($ruta) . "{$name}sTable.php"));
     }
 
     /**
@@ -234,7 +234,7 @@ abstract class LivewireGeneratorCommand extends Command
     protected function _getTableExportPath($name, $layot = 'admin')
     {
         $ruta = $this->exportTableNamespace . '\\' . $layot;
-        return $this->makeDirectory(app_path($this->_getNamespacePath($ruta) . "{$name}Export.php"));
+        return $this->makeDirectory(app_path($this->_getNamespacePath($ruta) . "{$name}sExport.php"));
     }
 
     /**
@@ -302,7 +302,7 @@ abstract class LivewireGeneratorCommand extends Command
                 ->sortable()
                 ->searchable()
                 ->format(function (\$value, \$column, \$row){
-                    return '<span>' . \$column->{$relationName}->name . '</span>';
+                      return '<span>' . (\$column->{$relationName}?->name ?? 'N/A') . '</span>';
                 })
                 ->html()";
             } elseif ($column === 'icon') {
@@ -357,7 +357,8 @@ abstract class LivewireGeneratorCommand extends Command
 
         $Namespace_TableExport = $this->exportTableNamespace . '\\' . $this->layout;
         $tableNamespace = $this->tableNamespace . '\\' . $this->layout;
-        $table_NamespaceLivewire = $this->layout . '.' . strtolower($this->name) . '-table';
+        $table_NamespaceLivewire = $this->layout . '.' . strtolower($this->name) . 's-table';
+
 
         $nombre = $this->name;
         if (Str::endsWith($nombre, 's')) {
@@ -366,21 +367,29 @@ abstract class LivewireGeneratorCommand extends Command
             $pluralNombre = Str::plural($nombre);
         }
 
+        if (Str::endsWith($pluralNombre, 's')) {
+            $pluralNombre = $nombre;
+        } else {
+            $pluralNombre = Str::plural($nombre);
+        }
+
         if ($this->layout === 'app') $app = 'temas.starcho.admin.app';
         else $app = $this->layout;
 
+     
         return [
             '{{layot_admin}}' => $this->layout,
             '{{layout}}' => $app,
-            '{{modelName}}' => $this->name,
+            '{{modelName}}' => $pluralNombre, //$this->name,
+            '{{modeloName}}' => strtolower($this->table),
             '{{modelTitle}}' => Str::title(Str::snake($this->name, ' ')),
             '{{modelNamespace}}' => $this->modelNamespace,
             '{{Namespace_TableExport}}' => $Namespace_TableExport,
-            '{{tableNamespaceLivewire}}' => $table_NamespaceLivewire,
+            '{{tableNamespaceLivewire}}' => strtolower($table_NamespaceLivewire),
             '{{tableNamespace}}' => $tableNamespace,
             '{{controllerNamespace}}' => $this->controllerNamespace,
             '{{modelNamePluralLowerCase}}' => Str::camel(Str::plural($ruta_livewire)),
-            '{{componentelivewire}}' => Str::camel($pluralNombre), //Str::camel(Str::plural($this->name)),
+            '{{componentelivewire}}' => Str::camel($pluralNombre), //Str::camel(Str::plural($this->name)),            
             '{{modelNamePluralUpperCase}}' => ucfirst(Str::plural($this->name)),
             '{{headRender}}' => $head_model_render,
             '{{modelNameLowerCase}}' => Str::camel($this->name),

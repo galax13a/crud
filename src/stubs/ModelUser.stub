@@ -12,7 +12,7 @@ class {{modelName}} extends Model
 	
     public $timestamps = true;
 
-    protected $table = '{{componentelivewire}}';
+    protected $table = '{{modeloName}}';
 
     protected $fillable = [{{fillable}}]; // fillable2
 	{{relations}} 
